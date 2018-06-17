@@ -1,7 +1,7 @@
 from unittest.mock import Mock
 
+import pytest
 from rest_framework import permissions as r_permissions
-from rest_framework import test
 
 from permissions.logic import Or, And
 
@@ -10,20 +10,54 @@ class APerm(r_permissions.BasePermission):
     def has_permission(self, request, view):
         return True
 
+    def has_object_permission(self, request, view, obj):
+        return True
+
 
 class BPerm(r_permissions.BasePermission):
     def has_permission(self, request, view):
         return False
 
+    def has_object_permission(self, request, view, obj):
+        return False
 
-class TestLogicCombinations(test.APITestCase):
-    def setUp(self):
-        self.AorB = Or(APerm, BPerm)
-        self.AandB = And(APerm, BPerm)
-        self.request_mock, self.view_mock = Mock(), Mock()
 
-    def test_aperm_or_bperm_should_be_true(self):
-        self.assertEqual(self.AorB().has_permission(self.request_mock, self.view_mock), True)
+boolean_to_class = {
+    True: APerm,
+    False: BPerm,
+}
 
-    def test_aperm_and_bperm_should_be_false(self):
-        self.assertEqual(self.AandB().has_permission(self.request_mock, self.view_mock), False)
+
+class TestLogicCombinations:
+    def setup_method(self):
+        self.request_mock, self.view_mock, self.obj_mock = Mock(), Mock(), Mock()
+
+    @pytest.mark.parametrize('first_perm,second_perm,third_perm,expected', [
+        (boolean_to_class[True], boolean_to_class[True], boolean_to_class[True], True),
+        (boolean_to_class[True], boolean_to_class[False], boolean_to_class[True], True),
+        (boolean_to_class[False], boolean_to_class[True], boolean_to_class[True], True),
+        (boolean_to_class[False], boolean_to_class[False], boolean_to_class[True], True),
+        (boolean_to_class[True], boolean_to_class[True], boolean_to_class[False], True),
+        (boolean_to_class[True], boolean_to_class[False], boolean_to_class[False], True),
+        (boolean_to_class[False], boolean_to_class[True], boolean_to_class[False], True),
+        (boolean_to_class[False], boolean_to_class[False], boolean_to_class[False], False)
+    ])
+    def test_or(self, first_perm, second_perm, third_perm, expected):
+        AorBorC = Or(first_perm, second_perm, third_perm)
+        assert AorBorC().has_permission(self.request_mock, self.view_mock) is expected
+        assert AorBorC().has_object_permission(self.request_mock, self.view_mock, self.obj_mock) is expected
+
+    @pytest.mark.parametrize('first_perm,second_perm,third_perm,expected', [
+        (boolean_to_class[True], boolean_to_class[True], boolean_to_class[True], True),
+        (boolean_to_class[True], boolean_to_class[False], boolean_to_class[True], False),
+        (boolean_to_class[False], boolean_to_class[True], boolean_to_class[True], False),
+        (boolean_to_class[False], boolean_to_class[False], boolean_to_class[True], False),
+        (boolean_to_class[True], boolean_to_class[True], boolean_to_class[False], False),
+        (boolean_to_class[True], boolean_to_class[False], boolean_to_class[False], False),
+        (boolean_to_class[False], boolean_to_class[True], boolean_to_class[False], False),
+        (boolean_to_class[False], boolean_to_class[False], boolean_to_class[False], False)
+    ])
+    def test_and(self, first_perm, second_perm, third_perm, expected):
+        AandBandC = And(first_perm, second_perm, third_perm)
+        assert AandBandC().has_object_permission(self.request_mock, self.view_mock, self.obj_mock) is expected
+        assert AandBandC().has_permission(self.request_mock, self.view_mock) is expected
