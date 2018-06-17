@@ -11,12 +11,12 @@ class BasePerm(r_permissions.BasePermission):
         return False
 
 
-class SomePermissionWithAutomaticSuperCall(PermissionTools, BasePerm, call_super=True):
+class PermissionWithAutomaticSuperCall(PermissionTools, BasePerm, call_super=True):
     def has_permission(self, request, view):
         return True
 
 
-class SomePermissionWithoutAutomaticSuperCall(PermissionTools, BasePerm, call_super=False):
+class PermissionWithoutAutomaticSuperCall(PermissionTools, BasePerm, call_super=False):
     def has_permission(self, request, view):
         return True
 
@@ -27,9 +27,9 @@ class TestPermissionTools(unittest.TestCase):
         self.view_mock = Mock()
 
     def test_base_classes_have_been_checked(self):
-        value = SomePermissionWithAutomaticSuperCall().has_permission(self.request_mock, self.view_mock)
+        value = PermissionWithAutomaticSuperCall().has_permission(self.request_mock, self.view_mock)
         self.assertEqual(value, False)
 
     def test_base_classes_have_not_been_checked(self):
-        value = SomePermissionWithoutAutomaticSuperCall().has_permission(self.request_mock, self.view_mock)
+        value = PermissionWithoutAutomaticSuperCall().has_permission(self.request_mock, self.view_mock)
         self.assertEqual(value, True)
