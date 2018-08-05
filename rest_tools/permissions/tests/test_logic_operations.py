@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 from rest_framework import permissions as r_permissions
 
-from permissions.logic import Or, And
+from rest_tools.permissions.logic import Or, And
 
 
 class APerm(r_permissions.BasePermission):
