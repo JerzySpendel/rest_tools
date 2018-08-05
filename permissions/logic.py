@@ -41,3 +41,4 @@ def ApplyLogicFunction(operator):
 
 Or = ApplyLogicFunction(operator.or_)
 And = ApplyLogicFunction(operator.and_)
+OneOf = ApplyLogicFunction(operator.xor)

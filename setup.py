@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='rest_permissions',
+    name='rest_tools',
     version=0.5,
     packages=find_packages(),
     author='Jerzy Spendel',
